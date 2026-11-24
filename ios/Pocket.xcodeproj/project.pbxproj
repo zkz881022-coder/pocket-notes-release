@@ -1,0 +1,105 @@
+// !$*UTF8*$!
+{
+ archiveVersion = 1;
+ classes = {};
+ objectVersion = 56;
+ objects = {
+  001000000000000000000001 = {isa = PBXBuildFile; fileRef = 002000000000000000000001; };
+  001000000000000000000002 = {isa = PBXBuildFile; fileRef = 002000000000000000000002; };
+  001000000000000000000003 = {isa = PBXBuildFile; fileRef = 002000000000000000000003; };
+  001000000000000000000004 = {isa = PBXBuildFile; fileRef = 002000000000000000000004; };
+  001000000000000000000005 = {isa = PBXBuildFile; fileRef = 002000000000000000000005; };
+  001000000000000000000006 = {isa = PBXBuildFile; fileRef = 002000000000000000000006; };
+  001000000000000000000007 = {isa = PBXBuildFile; fileRef = 002000000000000000000007; };
+
+  002000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+  002000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketViewController.swift; sourceTree = "<group>"; };
+  002000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketAssets.swift; sourceTree = "<group>"; };
+  002000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketFeed.swift; sourceTree = "<group>"; };
+  002000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+  002000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = folder; name = web; path = ../web; sourceTree = SOURCE_ROOT; };
+  002000000000000000000007 = {isa = PBXFileReference; lastKnownFileType = text.json; name = mobile.json; path = ../mobile.json; sourceTree = SOURCE_ROOT; };
+  002000000000000000000008 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+  002000000000000000000009 = {isa = PBXFileReference; explicitFileType = wrapper.application; path = Pocket.app; sourceTree = BUILT_PRODUCTS_DIR; includeInIndex = 0; };
+
+  003000000000000000000001 = {
+   isa = PBXGroup;
+   children = (003000000000000000000002, 002000000000000000000006, 002000000000000000000007, 003000000000000000000003);
+   sourceTree = "<group>";
+  };
+  003000000000000000000002 = {
+   isa = PBXGroup;
+   children = (002000000000000000000001, 002000000000000000000002, 002000000000000000000003, 002000000000000000000004, 002000000000000000000005, 002000000000000000000008);
+   path = Pocket;
+   sourceTree = "<group>";
+  };
+  003000000000000000000003 = {isa = PBXGroup; children = (002000000000000000000009); name = Products; sourceTree = "<group>"; };
+
+  004000000000000000000001 = {
+   isa = PBXSourcesBuildPhase;
+   buildActionMask = 2147483647;
+   files = (001000000000000000000001, 001000000000000000000002, 001000000000000000000003, 001000000000000000000004);
+   runOnlyForDeploymentPostprocessing = 0;
+  };
+  004000000000000000000002 = {
+   isa = PBXResourcesBuildPhase;
+   buildActionMask = 2147483647;
+   files = (001000000000000000000005, 001000000000000000000006, 001000000000000000000007);
+   runOnlyForDeploymentPostprocessing = 0;
+  };
+
+  005000000000000000000001 = {
+   isa = PBXNativeTarget;
+   buildConfigurationList = 006000000000000000000002;
+   buildPhases = (004000000000000000000001, 004000000000000000000002);
+   buildRules = ();
+   dependencies = ();
+   name = Pocket;
+   productName = Pocket;
+   productReference = 002000000000000000000009;
+   productType = "com.apple.product-type.application";
+  };
+  005000000000000000000002 = {
+   isa = PBXProject;
+   attributes = {LastUpgradeCheck = 1620; };
+   buildConfigurationList = 006000000000000000000001;
+   compatibilityVersion = "Xcode 14.0";
+   developmentRegion = en;
+   hasScannedForEncodings = 0;
+   knownRegions = (en, Base);
+   mainGroup = 003000000000000000000001;
+   productRefGroup = 003000000000000000000003;
+   projectDirPath = "";
+   projectRoot = "";
+   targets = (005000000000000000000001);
+  };
+
+  006000000000000000000001 = {
+   isa = XCConfigurationList;
+   buildConfigurations = (007000000000000000000001, 007000000000000000000002);
+   defaultConfigurationIsVisible = 0;
+   defaultConfigurationName = Release;
+  };
+  006000000000000000000002 = {
+   isa = XCConfigurationList;
+   buildConfigurations = (007000000000000000000003, 007000000000000000000004);
+   defaultConfigurationIsVisible = 0;
+   defaultConfigurationName = Release;
+  };
+
+  007000000000000000000001 = {
+   isa = XCBuildConfiguration;
+   buildSettings = { SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 16.0; };
+   name = Debug;
+  };
+  007000000000000000000002 = {
+   isa = XCBuildConfiguration;
+   buildSettings = { SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 16.0; };
+   name = Release;
+  };
+  007000000000000000000003 = {isa = XCBuildConfiguration; baseConfigurationReference = 002000000000000000000010; buildSettings = { SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }; name = Debug; };
+  007000000000000000000004 = {isa = XCBuildConfiguration; baseConfigurationReference = 002000000000000000000010; buildSettings = { SWIFT_OPTIMIZATION_LEVEL = "-O"; }; name = Release; };
+  002000000000000000000010 = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Pocket/Build.xcconfig; sourceTree = SOURCE_ROOT; };
+ };
+ rootObject = 005000000000000000000002;
+}

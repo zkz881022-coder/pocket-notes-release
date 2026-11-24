@@ -1,0 +1,34 @@
+name: Android
+run-name: pocket-android-${{ inputs.request_id }}
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: Publish request identifier
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build and verify signed APK
+        env:
+          ANDROID_SIGNING_P12: ${{ secrets.ANDROID_SIGNING_P12 }}
+          ANDROID_SIGNING_PASSWORD: ${{ secrets.ANDROID_SIGNING_PASSWORD }}
+        run: bash scripts/build-android.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pocket-android-apk
+          path: out/pocket-android.apk
+          if-no-files-found: error
+          retention-days: 1

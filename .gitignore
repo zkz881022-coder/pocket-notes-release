@@ -1,0 +1,9 @@
+android/.gradle/
+android/**/build/
+android/local.properties
+ios/build/
+*.xcuserstate
+xcuserdata/
+out/
+*.p12
+*.jks

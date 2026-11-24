@@ -1,0 +1,56 @@
+import groovy.json.JsonSlurper
+
+plugins {
+    id 'com.android.application' version '8.7.3'
+}
+
+def mobileFile = rootProject.file('../mobile.json')
+def metadata = new JsonSlurper().parse(mobileFile)
+def generatedAssets = layout.buildDirectory.dir('generated/pocketAssets')
+def keyPath = providers.environmentVariable('POCKET_ANDROID_KEYSTORE')
+def signingPassword = providers.environmentVariable('ANDROID_SIGNING_PASSWORD')
+
+android {
+    namespace 'com.pocketpublish.shell'
+    compileSdk 35
+    buildToolsVersion '35.0.0'
+
+    defaultConfig {
+        applicationId metadata.id
+        minSdk 24
+        targetSdk 34
+        versionCode metadata.build as int
+        versionName metadata.version
+        resValue 'string', 'app_name', metadata.name.replace("'", "\\'").replace('"', '\\"')
+    }
+
+    signingConfigs {
+        release {
+            if (keyPath.isPresent() && signingPassword.isPresent()) {
+                storeFile = file(keyPath.get())
+                storePassword = signingPassword.get()
+                storeType = 'PKCS12'
+                keyAlias = 'pocket'
+                keyPassword = signingPassword.get()
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            if (keyPath.isPresent() && signingPassword.isPresent()) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    sourceSets.main.assets.srcDir(generatedAssets)
+}
+
+tasks.register('preparePocketAssets', Sync) {
+    into(generatedAssets)
+    from(mobileFile)
+    from(rootProject.file('../web')) { into 'web' }
+}
+
+tasks.named('preBuild').configure { dependsOn tasks.named('preparePocketAssets') }

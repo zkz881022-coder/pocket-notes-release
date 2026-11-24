@@ -1,0 +1,101 @@
+name: Verify native apps on simulators
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Public Release tag containing pocket-android.apk
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    name: iOS Simulator
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Snapshot the current main feed
+        run: bash scripts/verify-native-feed.sh "$RUNNER_TEMP/pocket-check"
+      - name: Install and launch the simulator build
+        run: |
+          bash scripts/verify-ios-simulator.sh "$RUNNER_TEMP/pocket-check" "$RUNNER_TEMP/pocket-evidence"
+          printf '%s\n' 'iOS Simulator installed and launched the simulator build and persisted the expected HTTPS feed. The screenshot is an observation of that simulator. Physical iPhone, IPA signing, and AltStore installation were outside this check.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pocket-ios-simulator-check
+          path: ${{ runner.temp }}/pocket-evidence/
+          if-no-files-found: ignore
+          retention-days: 1
+
+  android:
+    name: Android Emulator
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check hardware acceleration
+        id: kvm
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pocket-evidence"
+          if [[ ! -c /dev/kvm ]]; then
+            message='Android emulator check skipped because this runner did not expose /dev/kvm. No APK was downloaded, installed, or launched.'
+            printf 'available=false\n' >> "$GITHUB_OUTPUT"
+            printf '%s\n' "$message" | tee "$RUNNER_TEMP/pocket-evidence/android-kvm-skipped.txt" >> "$GITHUB_STEP_SUMMARY"
+            printf '::warning::%s\n' "$message"
+            exit 0
+          fi
+          sudo chmod a+rw /dev/kvm
+          [[ -r /dev/kvm && -w /dev/kvm ]]
+          printf 'available=true\n' >> "$GITHUB_OUTPUT"
+      - name: Locate the emulator SDK tools
+        if: steps.kvm.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          printf 'ANDROID_HOME=%s\n' "$sdk_root" >> "$GITHUB_ENV"
+          for candidate in "$sdk_root/cmdline-tools/latest/bin/sdkmanager" "$sdk_root"/cmdline-tools/*/bin/sdkmanager; do
+            if [[ -x "$candidate" ]]; then
+              printf '%s\n' "${candidate%/*}" >> "$GITHUB_PATH"
+              break
+            fi
+          done
+          if [[ -n "${JAVA_HOME_21_X64:-}" ]]; then
+            printf 'JAVA_HOME=%s\n' "$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+            printf '%s\n' "$JAVA_HOME_21_X64/bin" >> "$GITHUB_PATH"
+          fi
+      - name: Snapshot the current main feed
+        if: steps.kvm.outputs.available == 'true'
+        run: bash scripts/verify-native-feed.sh "$RUNNER_TEMP/pocket-check"
+      - name: Download and verify the signed public APK
+        if: steps.kvm.outputs.available == 'true'
+        env:
+          POCKET_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: bash scripts/verify-android-release.sh "$RUNNER_TEMP/pocket-check" "$RUNNER_TEMP/pocket-evidence"
+      - name: Install, launch, and check displayed content
+        if: steps.kvm.outputs.available == 'true'
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          emulator-boot-timeout: 360
+          script: bash scripts/verify-android-emulator.sh "$RUNNER_TEMP/pocket-check" "$RUNNER_TEMP/pocket-evidence"
+      - name: Summarize Android emulator result
+        if: steps.kvm.outputs.available == 'true'
+        run: printf '%s\n' 'Android Emulator installed the verified Release APK and displayed the expected title and a current item absent from the bundled seed. A screenshot is included.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pocket-android-emulator-check
+          path: ${{ runner.temp }}/pocket-evidence/
+          if-no-files-found: ignore
+          retention-days: 1
