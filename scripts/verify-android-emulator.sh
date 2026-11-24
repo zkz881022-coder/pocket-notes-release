@@ -20,19 +20,32 @@ feed="$snapshot/expected.json"
 seed="$snapshot/android-seed.html"
 diagnostic="$evidence/android-ui-status.json"
 
-capture_app() {
+capture_screen() {
     local position="$1"
-    local raw="$snapshot/raw-android-ui.xml"
-    local clean="$snapshot/android-$position.xml"
-    timeout 7s adb shell uiautomator dump /sdcard/pocket-verification.xml >/dev/null 2>&1 \
-        && timeout 4s adb exec-out cat /sdcard/pocket-verification.xml > "$raw" \
-        && python3 scripts/verify-feed.py android-filter "$feed" "$seed" "$raw" \
-            --package "$app_id" --output "$clean" \
-        && cp "$clean" "$evidence/android-ui-$position.xml" || return 1
     if timeout 4s adb exec-out screencap -p > "$snapshot/android-$position.png" \
         && test -s "$snapshot/android-$position.png"; then
         cp "$snapshot/android-$position.png" "$evidence/android-emulator-$position.png"
     fi
+}
+
+capture_app() {
+    local position="$1"
+    local raw="$snapshot/raw-android-ui.xml"
+    local clean="$snapshot/android-$position.xml"
+    if timeout 7s adb shell uiautomator dump /sdcard/pocket-verification.xml >/dev/null 2>&1 \
+        && timeout 4s adb exec-out cat /sdcard/pocket-verification.xml > "$raw" \
+        && python3 scripts/verify-feed.py android-filter "$feed" "$seed" "$raw" \
+            --package "$app_id" --output "$clean" \
+        && cp "$clean" "$evidence/android-ui-$position.xml"; then
+        capture_screen "$position"
+        return 0
+    fi
+    if timeout 4s adb shell dumpsys window | awk -v app="$app_id" '
+        /mCurrentFocus=Window/ && index($0, " " app "/") { focused = 1 }
+        END { exit !focused }'; then
+        capture_screen "$position"
+    fi
+    return 1
 }
 
 for attempt in {1..12}; do
