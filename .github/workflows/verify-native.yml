@@ -2,6 +2,12 @@ name: Verify native apps on simulators
 on:
   workflow_dispatch:
     inputs:
+      platform:
+        description: Platforms to verify
+        required: false
+        default: both
+        type: choice
+        options: [both, android, ios]
       release_tag:
         description: Public Release tag containing pocket-android.apk
         required: true
@@ -12,6 +18,7 @@ permissions:
 
 jobs:
   ios:
+    if: inputs.platform == 'both' || inputs.platform == 'ios'
     name: iOS Simulator
     runs-on: macos-15
     timeout-minutes: 20
@@ -34,6 +41,7 @@ jobs:
           retention-days: 1
 
   android:
+    if: inputs.platform == 'both' || inputs.platform == 'android'
     name: Android Emulator
     runs-on: ubuntu-24.04
     timeout-minutes: 20
