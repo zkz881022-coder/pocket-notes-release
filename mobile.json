@@ -1,0 +1,7 @@
+{
+  "id": "app.pocketpublish.notes",
+  "name": "Pocket Notes",
+  "version": "1.0.0",
+  "build": 1,
+  "feedUrl": "https://raw.githubusercontent.com/zkz881022-coder/pocket-notes-release/main/public/feed.json"
+}
